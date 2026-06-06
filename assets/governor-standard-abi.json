@@ -1,0 +1,133 @@
+[
+  {
+    "type": "function",
+    "name": "name",
+    "stateMutability": "view",
+    "inputs": [],
+    "outputs": [{ "type": "string" }]
+  },
+  {
+    "type": "function",
+    "name": "version",
+    "stateMutability": "view",
+    "inputs": [],
+    "outputs": [{ "type": "string" }]
+  },
+  {
+    "type": "function",
+    "name": "state",
+    "stateMutability": "view",
+    "inputs": [{ "type": "uint256", "name": "proposalId" }],
+    "outputs": [{ "type": "uint8" }]
+  },
+  {
+    "type": "function",
+    "name": "proposalSnapshot",
+    "stateMutability": "view",
+    "inputs": [{ "type": "uint256", "name": "proposalId" }],
+    "outputs": [{ "type": "uint256" }]
+  },
+  {
+    "type": "function",
+    "name": "proposalDeadline",
+    "stateMutability": "view",
+    "inputs": [{ "type": "uint256", "name": "proposalId" }],
+    "outputs": [{ "type": "uint256" }]
+  },
+  {
+    "type": "function",
+    "name": "proposalVotes",
+    "stateMutability": "view",
+    "inputs": [{ "type": "uint256", "name": "proposalId" }],
+    "outputs": [
+      { "type": "uint256", "name": "againstVotes" },
+      { "type": "uint256", "name": "forVotes" },
+      { "type": "uint256", "name": "abstainVotes" }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "quorum",
+    "stateMutability": "view",
+    "inputs": [{ "type": "uint256", "name": "blockNumber" }],
+    "outputs": [{ "type": "uint256" }]
+  },
+  {
+    "type": "function",
+    "name": "hasVoted",
+    "stateMutability": "view",
+    "inputs": [
+      { "type": "uint256", "name": "proposalId" },
+      { "type": "address", "name": "account" }
+    ],
+    "outputs": [{ "type": "bool" }]
+  },
+  {
+    "type": "function",
+    "name": "getVotes",
+    "stateMutability": "view",
+    "inputs": [
+      { "type": "address", "name": "account" },
+      { "type": "uint256", "name": "blockNumber" }
+    ],
+    "outputs": [{ "type": "uint256" }]
+  },
+  {
+    "type": "function",
+    "name": "castVote",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "type": "uint256", "name": "proposalId" },
+      { "type": "uint8", "name": "support" }
+    ],
+    "outputs": [{ "type": "uint256", "name": "weight" }]
+  },
+  {
+    "type": "function",
+    "name": "propose",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "type": "address[]", "name": "targets" },
+      { "type": "uint256[]", "name": "values" },
+      { "type": "bytes[]", "name": "calldatas" },
+      { "type": "string", "name": "description" }
+    ],
+    "outputs": [{ "type": "uint256", "name": "proposalId" }]
+  },
+  {
+    "type": "function",
+    "name": "queue",
+    "stateMutability": "payable",
+    "inputs": [
+      { "type": "address[]", "name": "targets" },
+      { "type": "uint256[]", "name": "values" },
+      { "type": "bytes[]", "name": "calldatas" },
+      { "type": "bytes32", "name": "descriptionHash" }
+    ],
+    "outputs": [{ "type": "uint256" }]
+  },
+  {
+    "type": "function",
+    "name": "execute",
+    "stateMutability": "payable",
+    "inputs": [
+      { "type": "address[]", "name": "targets" },
+      { "type": "uint256[]", "name": "values" },
+      { "type": "bytes[]", "name": "calldatas" },
+      { "type": "bytes32", "name": "descriptionHash" }
+    ],
+    "outputs": [{ "type": "uint256" }]
+  },
+  {
+    "type": "function",
+    "name": "hashProposal",
+    "stateMutability": "view",
+    "inputs": [
+      { "type": "address[]", "name": "targets" },
+      { "type": "uint256[]", "name": "values" },
+      { "type": "bytes[]", "name": "calldatas" },
+      { "type": "bytes32", "name": "descriptionHash" }
+    ],
+    "outputs": [{ "type": "uint256" }]
+  }
+]

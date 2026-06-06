@@ -1,0 +1,6 @@
+interface:
+  display_name: "Pharos DAO Voting Interaction"
+  short_description: "Interact with DAO Governor contracts on Pharos."
+  default_prompt: "Use $pharos-dao-voting-interaction-skill to inspect DAO proposals, check voting power, cast votes, and manage Governor-compatible governance actions on Pharos."
+policy:
+  allow_implicit_invocation: true

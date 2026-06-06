@@ -1,0 +1,33 @@
+{
+  "name": "pharos-dao-voting-interaction-skill",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "AI-agent skill for interacting with DAO Governor voting contracts on Pharos.",
+  "main": "scripts/dao-vote.ts",
+  "bin": {
+    "pharos-dao-vote": "scripts/dao-vote.ts"
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "dao": "tsx scripts/dao-vote.ts",
+    "demo:inspect": "tsx scripts/dao-vote.ts inspect --network atlantic-testnet --governor 0x0000000000000000000000000000000000000000 --proposal-id 1"
+  },
+  "keywords": [
+    "pharos",
+    "dao",
+    "governance",
+    "voting",
+    "governor",
+    "agent",
+    "skill"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
