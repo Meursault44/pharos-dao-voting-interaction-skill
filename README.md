@@ -56,38 +56,38 @@ npm install
 Inspect a proposal:
 
 ```bash
-npm run dao -- inspect --network atlantic-testnet --governor 0xGovernor --proposal-id 123 --voter 0xVoter
+npm run dao -- inspect --network mainnet --governor 0xGovernor --proposal-id 123 --voter 0xVoter
 ```
 
 Check voting power:
 
 ```bash
-npm run dao -- power --network atlantic-testnet --governor 0xGovernor --voter 0xVoter --block 456
+npm run dao -- power --network mainnet --governor 0xGovernor --voter 0xVoter --block 456
 ```
 
 Cast a vote:
 
 ```bash
 $env:PRIVATE_KEY="0x..."
-npm run dao -- vote --network atlantic-testnet --governor 0xGovernor --proposal-id 123 --support for
+npm run dao -- vote --network mainnet --governor 0xGovernor --proposal-id 123 --support for
 ```
 
 Create a proposal:
 
 ```bash
-npm run dao -- propose --network atlantic-testnet --governor 0xGovernor --targets 0xTarget --values 0 --calldatas 0x --description "Update treasury policy"
+npm run dao -- propose --network mainnet --governor 0xGovernor --targets 0xTarget --values 0 --calldatas 0x --description "Update treasury policy"
 ```
 
 Queue or execute a proposal:
 
 ```bash
-npm run dao -- queue --network atlantic-testnet --governor 0xGovernor --targets 0xTarget --values 0 --calldatas 0x --description "Update treasury policy"
-npm run dao -- execute --network atlantic-testnet --governor 0xGovernor --targets 0xTarget --values 0 --calldatas 0x --description "Update treasury policy"
+npm run dao -- queue --network mainnet --governor 0xGovernor --targets 0xTarget --values 0 --calldatas 0x --description "Update treasury policy"
+npm run dao -- execute --network mainnet --governor 0xGovernor --targets 0xTarget --values 0 --calldatas 0x --description "Update treasury policy"
 ```
 
 ## Demo Strategy
 
-For a campaign demo, deploy a simple ERC20Votes token and OpenZeppelin Governor to Pharos Atlantic testnet, then run:
+For a campaign demo, deploy a simple ERC20Votes token and OpenZeppelin Governor to Pharos mainnet or Atlantic testnet, then run:
 
 1. `propose`
 2. `inspect`

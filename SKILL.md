@@ -9,7 +9,7 @@ Use this skill to help AI agents interact with DAO governance contracts on Pharo
 
 ## Network Rules
 
-- Default to Atlantic testnet unless the user explicitly asks for mainnet.
+- Default to Pharos mainnet unless the user explicitly asks for Atlantic testnet.
 - Read network settings from `assets/networks.json`.
 - For write operations, require `PRIVATE_KEY` and never print it.
 - Before any write on mainnet, clearly warn the user and request confirmation.
@@ -34,16 +34,16 @@ Use `scripts/dao-vote.ts` for deterministic command generation and common Govern
 Common examples:
 
 ```bash
-npm run dao -- inspect --network atlantic-testnet --governor 0xGovernor --proposal-id 123 --voter 0xVoter
-npm run dao -- power --network atlantic-testnet --governor 0xGovernor --voter 0xVoter --block 456
-npm run dao -- vote --network atlantic-testnet --governor 0xGovernor --proposal-id 123 --support for
-npm run dao -- propose --network atlantic-testnet --governor 0xGovernor --targets 0xTarget --values 0 --calldatas 0x --description "Update treasury policy"
-npm run dao -- execute --network atlantic-testnet --governor 0xGovernor --targets 0xTarget --values 0 --calldatas 0x --description "Update treasury policy"
+npm run dao -- inspect --network mainnet --governor 0xGovernor --proposal-id 123 --voter 0xVoter
+npm run dao -- power --network mainnet --governor 0xGovernor --voter 0xVoter --block 456
+npm run dao -- vote --network mainnet --governor 0xGovernor --proposal-id 123 --support for
+npm run dao -- propose --network mainnet --governor 0xGovernor --targets 0xTarget --values 0 --calldatas 0x --description "Update treasury policy"
+npm run dao -- execute --network mainnet --governor 0xGovernor --targets 0xTarget --values 0 --calldatas 0x --description "Update treasury policy"
 ```
 
 ## Optional Demo Path
 
-If Pharos does not have an official DAO voting dApp, position this skill as infrastructure for any Governor-compatible DAO on Pharos. For a campaign demo, deploy a minimal ERC20Votes token plus OpenZeppelin Governor on Atlantic testnet, then show:
+If Pharos does not have an official DAO voting dApp, position this skill as infrastructure for any Governor-compatible DAO on Pharos. For a campaign demo, deploy a minimal ERC20Votes token plus OpenZeppelin Governor on Pharos mainnet or Atlantic testnet, then show:
 
 ```text
 create proposal -> inspect status -> check voting power -> cast vote -> inspect result -> queue/execute when eligible
