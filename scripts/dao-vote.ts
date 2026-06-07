@@ -123,6 +123,35 @@ function printResult(label: string, value: string): void {
   console.log(`${label}: ${value.length > 0 ? value : "unavailable"}`);
 }
 
+function formatInteger(value: string): string {
+  return BigInt(value).toLocaleString("en-US");
+}
+
+function formatTokenAmount(raw: string, symbol = "PDVT"): string {
+  const value = BigInt(castNumber(raw));
+  const base = 10n ** 18n;
+  const whole = value / base;
+  const fraction = value % base;
+  if (fraction === 0n) return `${formatInteger(whole.toString())} ${symbol}`;
+  const fractionText = fraction.toString().padStart(18, "0").replace(/0+$/, "");
+  return `${formatInteger(whole.toString())}.${fractionText} ${symbol}`;
+}
+
+function printTokenResult(label: string, value: string, symbol = "PDVT"): void {
+  console.log(`${label}: ${value.length > 0 ? formatTokenAmount(value, symbol) : "unavailable"}`);
+}
+
+function printProposalVotes(value: string): void {
+  const values = value.split(/\s+/).filter((item) => /^\d+$/.test(item));
+  if (values.length < 3) {
+    printResult("Votes", value);
+    return;
+  }
+  printTokenResult("Against votes", values[0]);
+  printTokenResult("For votes", values[1]);
+  printTokenResult("Abstain votes", values[2]);
+}
+
 function splitCsv(value: string): string[] {
   return value.split(",").map((item) => item.trim()).filter(Boolean);
 }
@@ -172,8 +201,8 @@ function inspect(args: Args): void {
   const snapshot = castCall(network, governor, "proposalSnapshot(uint256)(uint256)", [proposalId]);
   printResult("Snapshot block", snapshot);
   printResult("Deadline block", castCall(network, governor, "proposalDeadline(uint256)(uint256)", [proposalId]));
-  printResult("Votes against/for/abstain", castCall(network, governor, "proposalVotes(uint256)(uint256,uint256,uint256)", [proposalId]));
-  if (snapshot) printResult("Quorum at snapshot", castCall(network, governor, "quorum(uint256)(uint256)", [castNumber(snapshot)]));
+  printProposalVotes(castCall(network, governor, "proposalVotes(uint256)(uint256,uint256,uint256)", [proposalId]));
+  if (snapshot) printTokenResult("Quorum at snapshot", castCall(network, governor, "quorum(uint256)(uint256)", [castNumber(snapshot)]));
   const voter = optional(args, "voter");
   if (voter) {
     printResult("Voter has voted", castCall(network, governor, "hasVoted(uint256,address)(bool)", [proposalId, voter]));
@@ -186,19 +215,19 @@ function checkPower(network: Network, governor: string, voter: string, token?: s
   if (blockNumber !== "latest") {
     const governorVotes = castCall(network, governor, "getVotes(address,uint256)(uint256)", [voter, blockNumber]);
     if (governorVotes) {
-      printResult("Voting power", governorVotes);
+      printTokenResult("Voting power", governorVotes);
       return;
     }
   }
   if (token && blockNumber !== "latest") {
     const tokenVotes = castCall(network, token, "getVotes(address,uint256)(uint256)", [voter, blockNumber]);
     if (tokenVotes) {
-      printResult("Token voting power", tokenVotes);
+      printTokenResult("Token voting power", tokenVotes);
       return;
     }
   }
   if (token) {
-    printResult("Current token balance fallback", castCall(network, token, "balanceOf(address)(uint256)", [voter]));
+    printTokenResult("Current token balance fallback", castCall(network, token, "balanceOf(address)(uint256)", [voter]));
     console.log("Note: balanceOf is not snapshot-accurate voting power.");
     return;
   }
