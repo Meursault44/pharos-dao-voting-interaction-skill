@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
+import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -22,6 +23,7 @@ type Args = Record<string, string | boolean>;
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const configPath = join(root, "assets", "networks.json");
 const states = ["Pending", "Active", "Canceled", "Defeated", "Succeeded", "Queued", "Expired", "Executed"];
+const castBin = resolveCastBin();
 const supportValues: Record<string, string> = {
   against: "0",
   no: "0",
@@ -44,6 +46,15 @@ Usage:
 `;
   console.log(text.trim());
   process.exit(exitCode);
+}
+
+function resolveCastBin(): string {
+  if (process.env.CAST_BIN) return process.env.CAST_BIN;
+  const candidates = [
+    join(homedir(), ".foundry", "bin", process.platform === "win32" ? "cast.exe" : "cast"),
+    join("D:", "Users", "gamea", ".foundry", "bin", "cast.exe")
+  ];
+  return candidates.find((candidate) => existsSync(candidate)) ?? "cast";
 }
 
 function parse(argv: string[]): { command: string; args: Args } {
@@ -101,7 +112,7 @@ function run(command: string, args: string[], options: { allowFailure?: boolean;
 }
 
 function cast(args: string[], allowFailure = false): string {
-  return run("cast", args, { allowFailure });
+  return run(castBin, args, { allowFailure });
 }
 
 function castCall(network: Network, address: string, signature: string, params: string[] = [], allowFailure = true): string {
@@ -124,10 +135,14 @@ function descriptionHash(description: string): string {
   return cast(["keccak", description], false);
 }
 
+function castNumber(value: string): string {
+  return value.split(/\s+/)[0] ?? value;
+}
+
 function requirePrivateKey(network: Network, governor: string, action: string): string {
   const privateKey = process.env.PRIVATE_KEY;
   if (!privateKey) throw new Error("PRIVATE_KEY is not set. Set it before write operations.");
-  const signer = run("cast", ["wallet", "address", "--private-key", privateKey], { redact: true });
+  const signer = run(castBin, ["wallet", "address", "--private-key", privateKey], { redact: true });
   console.log(`Signer: ${signer}`);
   console.log(`Network: ${network.name} (chain ${network.chainId})`);
   console.log(`Governor: ${governor}`);
@@ -140,7 +155,7 @@ function requirePrivateKey(network: Network, governor: string, action: string): 
 
 function sendGovernor(network: Network, governor: string, signature: string, params: string[], action: string): void {
   const privateKey = requirePrivateKey(network, governor, action);
-  const output = run("cast", ["send", governor, signature, ...params, "--rpc-url", network.rpcUrl, "--private-key", privateKey], { redact: true });
+  const output = run(castBin, ["send", governor, signature, ...params, "--rpc-url", network.rpcUrl, "--private-key", privateKey], { redact: true });
   console.log(output);
 }
 
@@ -152,17 +167,17 @@ function inspect(args: Args): void {
   printResult("Governor name", castCall(network, governor, "name()(string)"));
   printResult("Governor version", castCall(network, governor, "version()(string)"));
   const stateRaw = castCall(network, governor, "state(uint256)(uint8)", [proposalId]);
-  const stateNumber = Number(stateRaw);
+  const stateNumber = Number(castNumber(stateRaw));
   printResult("Proposal state", Number.isFinite(stateNumber) ? `${stateRaw} (${states[stateNumber] ?? "Unknown"})` : stateRaw);
   const snapshot = castCall(network, governor, "proposalSnapshot(uint256)(uint256)", [proposalId]);
   printResult("Snapshot block", snapshot);
   printResult("Deadline block", castCall(network, governor, "proposalDeadline(uint256)(uint256)", [proposalId]));
   printResult("Votes against/for/abstain", castCall(network, governor, "proposalVotes(uint256)(uint256,uint256,uint256)", [proposalId]));
-  if (snapshot) printResult("Quorum at snapshot", castCall(network, governor, "quorum(uint256)(uint256)", [snapshot]));
+  if (snapshot) printResult("Quorum at snapshot", castCall(network, governor, "quorum(uint256)(uint256)", [castNumber(snapshot)]));
   const voter = optional(args, "voter");
   if (voter) {
     printResult("Voter has voted", castCall(network, governor, "hasVoted(uint256,address)(bool)", [proposalId, voter]));
-    checkPower(network, governor, voter, optional(args, "token"), optional(args, "block") ?? snapshot);
+    checkPower(network, governor, voter, optional(args, "token"), optional(args, "block") ?? castNumber(snapshot));
   }
 }
 
