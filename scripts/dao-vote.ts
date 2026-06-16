@@ -31,6 +31,14 @@ const supportValues: Record<string, string> = {
   yes: "1",
   abstain: "2"
 };
+const governorEvents: Record<string, string> = {
+  proposalCreated: "ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)",
+  voteCast: "VoteCast(address,uint256,uint8,uint256,string)",
+  voteCastWithParams: "VoteCastWithParams(address,uint256,uint8,uint256,string,bytes)",
+  proposalQueued: "ProposalQueued(uint256,uint256)",
+  proposalExecuted: "ProposalExecuted(uint256)",
+  proposalCanceled: "ProposalCanceled(uint256)"
+};
 
 function usage(exitCode = 0): never {
   const text = `
@@ -43,6 +51,7 @@ Usage:
   dao-vote propose --governor 0x... --targets 0xA,0xB --values 0,0 --calldatas 0x,0x --description "..."
   dao-vote queue --governor 0x... --targets 0xA --values 0 --calldatas 0x --description "..."
   dao-vote execute --governor 0x... --targets 0xA --values 0 --calldatas 0x --description "..."
+  dao-vote logs --governor 0x... --event voteCast --from-block 0
 `;
   console.log(text.trim());
   process.exit(exitCode);
@@ -179,6 +188,8 @@ function requirePrivateKey(network: Network, governor: string, action: string): 
   if (network.name === "mainnet" && process.env.PHAROS_DAO_CONFIRM_MAINNET !== "YES") {
     throw new Error("Mainnet write blocked. Set PHAROS_DAO_CONFIRM_MAINNET=YES only after explicit user confirmation.");
   }
+  const balance = run(castBin, ["balance", signer, "--rpc-url", network.rpcUrl, "--ether"], { redact: true });
+  console.log(`Signer native balance: ${balance} ${network.nativeToken}`);
   return privateKey;
 }
 
@@ -285,6 +296,22 @@ function queueOrExecute(command: "queue" | "execute", args: Args): void {
   );
 }
 
+function logs(args: Args): void {
+  const network = resolveNetwork(args);
+  const governor = required(args, "governor");
+  const eventName = (optional(args, "event") ?? "voteCast").replace(/[-_]/g, "").toLowerCase();
+  const eventKey = Object.keys(governorEvents).find((key) => key.toLowerCase() === eventName);
+  if (!eventKey) throw new Error(`Unsupported --event. Use: ${Object.keys(governorEvents).join(", ")}`);
+  const fromBlock = optional(args, "from-block") ?? "0";
+  const toBlock = optional(args, "to-block");
+  console.log(`Network: ${network.name} (chain ${network.chainId})`);
+  console.log(`Governor: ${governor}`);
+  console.log(`Event: ${governorEvents[eventKey]}`);
+  const castArgs = ["logs", "--from-block", fromBlock, "--address", governor, governorEvents[eventKey], "--rpc-url", network.rpcUrl];
+  if (toBlock) castArgs.splice(3, 0, "--to-block", toBlock);
+  console.log(run(castBin, castArgs));
+}
+
 function main(): void {
   const { command, args } = parse(process.argv.slice(2));
   if (command === "inspect") return inspect(args);
@@ -292,6 +319,7 @@ function main(): void {
   if (command === "vote") return vote(args);
   if (command === "propose") return propose(args);
   if (command === "queue" || command === "execute") return queueOrExecute(command, args);
+  if (command === "logs") return logs(args);
   throw new Error(`Unknown command: ${command}`);
 }
 

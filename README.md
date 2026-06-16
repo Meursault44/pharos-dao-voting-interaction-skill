@@ -4,6 +4,8 @@ AI-agent skill for interacting with DAO governance contracts on Pharos-compatibl
 
 It lets an agent inspect proposals, check voting power, cast votes, create Governor-compatible proposals, and queue or execute successful proposals. It is designed for the case where Pharos does not yet expose an official DAO voting dApp: the skill acts as a reusable governance adapter for any OpenZeppelin Governor-style DAO deployed on Pharos.
 
+The layout follows the Pharos Skill Engine guide: `SKILL.md` is the agent entry point, `references/governor-workflow.md` holds exact command templates, parameter tables, output rules, error handling, and agent guidelines, `assets/networks.json` provides Atlantic testnet and mainnet configuration, and `scripts/dao-vote.ts` wraps common `cast` calls into deterministic commands.
+
 ## What It Does
 
 - Read Governor metadata and proposal state.
@@ -12,7 +14,16 @@ It lets an agent inspect proposals, check voting power, cast votes, create Gover
 - Cast `against`, `for`, or `abstain` votes.
 - Create proposals with `propose(targets, values, calldatas, description)`.
 - Queue and execute passed proposals when the Governor supports timelock flow.
+- Query Governor events such as `VoteCast`, `ProposalCreated`, `ProposalQueued`, and `ProposalExecuted`.
 - Keep write operations explicit and private-key safe.
+
+## Network Behavior
+
+- Default network is Pharos Atlantic testnet.
+- Mainnet is used only when explicitly requested.
+- Every read and write command passes `--rpc-url` explicitly.
+- Every write command passes `--private-key $PRIVATE_KEY` explicitly; Foundry does not auto-read the key from the environment.
+- Before writes, the script derives the signer, prints network/governor/action, checks native gas balance, and blocks mainnet unless `PHAROS_DAO_CONFIRM_MAINNET=YES` is set after explicit confirmation.
 
 ## Why It Matters
 
@@ -44,6 +55,7 @@ This skill enables AI agents to interact with DAO governance contracts on Pharos
 - Node.js 18+
 - Foundry `cast`
 - `PRIVATE_KEY` only for write commands
+- Every write command passes `--private-key $PRIVATE_KEY` explicitly and every EVM call passes `--rpc-url` explicitly.
 
 Install local TypeScript runner dependencies:
 
@@ -53,41 +65,56 @@ npm install
 
 ## Usage
 
-Inspect a proposal:
+Inspect a proposal on Atlantic testnet:
 
 ```bash
-npm run dao -- inspect --network mainnet --governor 0xGovernor --proposal-id 123 --voter 0xVoter
+npm run dao -- inspect --network atlantic-testnet --governor 0xGovernor --proposal-id 123 --voter 0xVoter
 ```
 
 Check voting power:
 
 ```bash
-npm run dao -- power --network mainnet --governor 0xGovernor --voter 0xVoter --block 456
+npm run dao -- power --network atlantic-testnet --governor 0xGovernor --voter 0xVoter --block 456
 ```
 
 Cast a vote:
 
 ```bash
 $env:PRIVATE_KEY="0x..."
-npm run dao -- vote --network mainnet --governor 0xGovernor --proposal-id 123 --support for
+npm run dao -- vote --network atlantic-testnet --governor 0xGovernor --proposal-id 123 --support for
 ```
 
 Create a proposal:
 
 ```bash
-npm run dao -- propose --network mainnet --governor 0xGovernor --targets 0xTarget --values 0 --calldatas 0x --description "Update treasury policy"
+npm run dao -- propose --network atlantic-testnet --governor 0xGovernor --targets 0xTarget --values 0 --calldatas 0x --description "Update treasury policy"
 ```
 
 Queue or execute a proposal:
 
 ```bash
-npm run dao -- queue --network mainnet --governor 0xGovernor --targets 0xTarget --values 0 --calldatas 0x --description "Update treasury policy"
-npm run dao -- execute --network mainnet --governor 0xGovernor --targets 0xTarget --values 0 --calldatas 0x --description "Update treasury policy"
+npm run dao -- queue --network atlantic-testnet --governor 0xGovernor --targets 0xTarget --values 0 --calldatas 0x --description "Update treasury policy"
+npm run dao -- execute --network atlantic-testnet --governor 0xGovernor --targets 0xTarget --values 0 --calldatas 0x --description "Update treasury policy"
 ```
+
+Query Governor events:
+
+```bash
+npm run dao -- logs --network atlantic-testnet --governor 0xGovernor --event voteCast --from-block 0
+```
+
+Supported event names:
+
+- `proposalCreated`
+- `voteCast`
+- `voteCastWithParams`
+- `proposalQueued`
+- `proposalExecuted`
+- `proposalCanceled`
 
 ## Demo Strategy
 
-For a campaign demo, deploy a simple ERC20Votes token and OpenZeppelin Governor to Pharos mainnet or Atlantic testnet, then run:
+For a campaign demo, deploy a simple ERC20Votes token and OpenZeppelin Governor to Pharos Atlantic testnet from `../pharos-dao-demo-foundry`, then run:
 
 1. `propose`
 2. `inspect`
@@ -97,3 +124,11 @@ For a campaign demo, deploy a simple ERC20Votes token and OpenZeppelin Governor 
 6. `queue` / `execute`
 
 This proves the skill even before an official Pharos DAO voting dApp exists.
+
+Mainnet is supported only when explicitly requested. Before any mainnet write, show the target network and require explicit confirmation.
+
+Before any write operation, the agent must confirm `PRIVATE_KEY` is set without printing it, derive the signer with `cast wallet address --private-key`, display network/governor/action, check native gas balance, and only then send the transaction. For demo verification, wait at least 10 seconds before `forge verify-contract`.
+
+## Safety
+
+Read operations (`inspect`, `power`, `logs`) never require a private key. Write operations (`vote`, `propose`, `queue`, `execute`) require explicit user intent, configured `PRIVATE_KEY`, gas balance, and mainnet confirmation when applicable.
