@@ -1,5 +1,5 @@
 {
-  "network": "mainnet",
+  "network": "atlantic-testnet",
   "governor": "0x0000000000000000000000000000000000000000",
   "targets": ["0x0000000000000000000000000000000000000000"],
   "values": ["0"],

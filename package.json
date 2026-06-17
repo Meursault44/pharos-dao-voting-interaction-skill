@@ -10,7 +10,7 @@
   "scripts": {
     "check": "tsc --noEmit",
     "dao": "tsx scripts/dao-vote.ts",
-    "demo:inspect": "tsx scripts/dao-vote.ts inspect --network mainnet --governor 0x0000000000000000000000000000000000000000 --proposal-id 1"
+    "demo:inspect": "tsx scripts/dao-vote.ts inspect --network atlantic-testnet --governor 0x0000000000000000000000000000000000000000 --proposal-id 1"
   },
   "keywords": [
     "pharos",
